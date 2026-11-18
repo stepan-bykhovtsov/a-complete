@@ -88,8 +88,9 @@ class GenerateCodeAction : AnAction() {
                         }
                     }, ModalityState.defaultModalityState())
 
-                } catch (_: ProcessCanceledException) {
+                } catch (ex: ProcessCanceledException) {
                     rangeMarker.dispose()
+                    throw ex
                 } catch (ex: Exception) {
                     rangeMarker.dispose()
                     ACompleteNotifier.notifyError(project, ex.message ?: "Code generation failed")
