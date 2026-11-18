@@ -20,6 +20,7 @@ class ACompleteSettings : PersistentStateComponent<ACompleteSettings.State> {
         var temperature: Double = DEFAULT_TEMPERATURE,
         var maxTokens: Int = DEFAULT_MAX_TOKENS,
         var contextLinesWindow: Int = DEFAULT_CONTEXT_LINES_WINDOW,
+        var cachedModels: List<String> = emptyList(),
         var apiKey: String = "" // Kept solely for automatic migration from legacy plaintext storage
     )
 
@@ -45,17 +46,6 @@ class ACompleteSettings : PersistentStateComponent<ACompleteSettings.State> {
         const val DEFAULT_TEMPERATURE = 0.2
         const val DEFAULT_MAX_TOKENS = 1024
         const val DEFAULT_CONTEXT_LINES_WINDOW = 250
-
-        val POPULAR_MODELS = listOf(
-            "anthropic/claude-3.5-sonnet",
-            "openai/gpt-4o-mini",
-            "openai/gpt-4o",
-            "deepseek/deepseek-chat",
-            "deepseek/deepseek-r1",
-            "google/gemini-2.5-flash",
-            "meta-llama/llama-3.3-70b-instruct",
-            "qwen/qwen-2.5-coder-32b-instruct"
-        )
 
         val instance: ACompleteSettings
             get() = ApplicationManager.getApplication().getService(ACompleteSettings::class.java)

@@ -68,3 +68,13 @@ data class ConnectionTestResult(
     val latencyMs: Long = 0,
     val errorMessage: String? = null
 )
+
+data class ModelsListResponse(
+    val data: List<ModelItem>? = null
+)
+
+data class ModelItem(
+    val id: String,
+    val name: String? = null
+)
+

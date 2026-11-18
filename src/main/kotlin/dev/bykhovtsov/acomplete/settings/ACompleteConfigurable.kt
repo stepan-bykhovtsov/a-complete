@@ -11,6 +11,7 @@ import com.intellij.ui.dsl.builder.panel
 import dev.bykhovtsov.acomplete.service.ACompleteService
 import dev.bykhovtsov.acomplete.util.ACompleteBundle
 import java.awt.Font
+import javax.swing.DefaultComboBoxModel
 import javax.swing.JComboBox
 import javax.swing.JComponent
 
@@ -19,8 +20,11 @@ class ACompleteConfigurable : SearchableConfigurable {
     private val settings = ACompleteSettings.instance
 
     private val apiKeyField = JBPasswordField()
-    private val modelComboBox = JComboBox(ACompleteSettings.POPULAR_MODELS.toTypedArray()).apply {
+    private val modelComboBox = JComboBox<String>().apply {
         isEditable = true
+    }
+    private val modelsStatusLabel = JBLabel().apply {
+        font = font.deriveFont(Font.PLAIN)
     }
     private val apiBaseUrlField = JBTextField()
     private val timeoutField = JBTextField()
@@ -47,6 +51,10 @@ class ACompleteConfigurable : SearchableConfigurable {
                 row(ACompleteBundle.message("settings.model.label")) {
                     cell(modelComboBox)
                         .comment(ACompleteBundle.message("settings.model.comment"))
+                    button(ACompleteBundle.message("settings.refreshModels.button")) {
+                        refreshModelsList()
+                    }
+                    cell(modelsStatusLabel)
                 }
                 row(ACompleteBundle.message("settings.apiBaseUrl.label")) {
                     cell(apiBaseUrlField)
@@ -152,10 +160,51 @@ class ACompleteConfigurable : SearchableConfigurable {
         contextWindowField.text.toIntOrNull()?.let { state.contextLinesWindow = it.coerceIn(50, 2000) }
     }
 
+    private fun refreshModelsList() {
+        val url = apiBaseUrlField.text.trim().ifEmpty { ACompleteSettings.DEFAULT_API_BASE_URL }
+        val key = String(apiKeyField.password).trim().ifEmpty { ACompleteCredentials.getApiKey() ?: "" }
+
+        modelsStatusLabel.text = ACompleteBundle.message("settings.refreshModels.loading")
+        modelsStatusLabel.foreground = JBColor.GRAY
+
+        ApplicationManager.getApplication().executeOnPooledThread {
+            try {
+                val models = ACompleteService.instance.fetchModels(url, key)
+                ApplicationManager.getApplication().invokeLater {
+                    updateModelComboBox(models)
+                    modelsStatusLabel.text = ACompleteBundle.message("settings.refreshModels.success", models.size)
+                    modelsStatusLabel.foreground = JBColor(0x28a745, 0x5cb85c)
+                }
+            } catch (ex: Exception) {
+                ApplicationManager.getApplication().invokeLater {
+                    modelsStatusLabel.text = ACompleteBundle.message("settings.refreshModels.failed", ex.message ?: "Error")
+                    modelsStatusLabel.foreground = JBColor.RED
+                }
+            }
+        }
+    }
+
+    private fun updateModelComboBox(models: List<String>) {
+        val currentSelection = (modelComboBox.editor.item?.toString() ?: modelComboBox.selectedItem?.toString()).orEmpty().trim()
+        modelComboBox.model = DefaultComboBoxModel(models.toTypedArray())
+        if (currentSelection.isNotEmpty()) {
+            modelComboBox.selectedItem = currentSelection
+            modelComboBox.editor.item = currentSelection
+        }
+    }
+
     override fun reset() {
         val state = settings.state
         val storedKey = ACompleteCredentials.getApiKey() ?: ""
         apiKeyField.text = storedKey
+
+        val cached = state.cachedModels
+        if (cached.isNotEmpty()) {
+            updateModelComboBox(cached)
+        } else {
+            // Asynchronously fetch on opening if cache is not yet populated
+            refreshModelsList()
+        }
 
         modelComboBox.selectedItem = state.model
         modelComboBox.editor.item = state.model
@@ -166,5 +215,6 @@ class ACompleteConfigurable : SearchableConfigurable {
         maxTokensField.text = state.maxTokens.toString()
         contextWindowField.text = state.contextLinesWindow.toString()
         testStatusLabel.text = ""
+        modelsStatusLabel.text = ""
     }
 }

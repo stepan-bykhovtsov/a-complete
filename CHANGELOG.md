@@ -18,7 +18,7 @@
   - Added a one-click "Open Settings" action button to the missing API key notification.
   - Designed modern Settings panel using Kotlin UI DSL v2 (`panel { ... }`).
   - Added real-time **Test Connection** button in Settings with latency measurement.
-  - Added editable model selector with curated presets (`claude-3.5-sonnet`, `gpt-4o-mini`, `deepseek-chat`, `gemini-2.5-flash`, etc.).
+  - Replaced hardcoded model list with dynamic model fetching from the OpenRouter `/models` endpoint, local caching, and a 'Refresh Models' button.
   - Added menu entries in `GenerateGroup` (Code -> Generate) and `EditorPopupMenu`.
   - Automatically moves the caret to the end of inserted code and scrolls smoothly.
 - **Client & Performance**:

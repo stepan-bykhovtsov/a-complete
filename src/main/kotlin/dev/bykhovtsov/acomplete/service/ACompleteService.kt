@@ -59,6 +59,33 @@ class ACompleteService {
         )
     }
 
+    /**
+     * Fetches fresh models from the endpoint and updates cache.
+     */
+    fun fetchModels(baseUrl: String = ACompleteSettings.instance.state.apiBaseUrl, apiKey: String? = null): List<String> {
+        val key = apiKey ?: ACompleteCredentials.getApiKey()
+        val models = client.fetchAvailableModels(baseUrl, key)
+        if (models.isNotEmpty()) {
+            ACompleteSettings.instance.state.cachedModels = models
+        }
+        return models
+    }
+
+    /**
+     * Returns cached models if available, otherwise attempts to fetch from endpoint.
+     */
+    fun getAvailableModels(baseUrl: String = ACompleteSettings.instance.state.apiBaseUrl): List<String> {
+        val cached = ACompleteSettings.instance.state.cachedModels
+        if (cached.isNotEmpty()) {
+            return cached
+        }
+        return try {
+            fetchModels(baseUrl)
+        } catch (_: Exception) {
+            emptyList()
+        }
+    }
+
     companion object {
         val instance: ACompleteService
             get() = ApplicationManager.getApplication().getService(ACompleteService::class.java)

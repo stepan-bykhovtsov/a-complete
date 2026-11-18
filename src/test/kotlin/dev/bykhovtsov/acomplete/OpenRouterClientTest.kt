@@ -91,4 +91,33 @@ class OpenRouterClientTest {
             assertEquals("User key has insufficient balance", ex.message)
         }
     }
+
+    @Test
+    fun testResolveModelsUrl() {
+        assertEquals("https://openrouter.ai/api/v1/models", client.resolveModelsUrl("https://openrouter.ai/api/v1"))
+        assertEquals("https://openrouter.ai/api/v1/models", client.resolveModelsUrl("https://openrouter.ai/api/v1/"))
+        assertEquals("https://openrouter.ai/api/v1/models", client.resolveModelsUrl("https://openrouter.ai/api/v1/chat/completions"))
+        assertEquals("https://openrouter.ai/api/v1/models", client.resolveModelsUrl("https://openrouter.ai/api/v1/responses"))
+        assertEquals("https://openrouter.ai/api/v1/models", client.resolveModelsUrl("https://openrouter.ai/api/v1/models"))
+    }
+
+    @Test
+    fun testParseModelsList() {
+        val json = """
+            {
+              "data": [
+                { "id": "openai/gpt-4o", "name": "GPT-4o" },
+                { "id": "anthropic/claude-3.5-sonnet", "name": "Claude 3.5 Sonnet" },
+                { "id": "google/gemini-2.5-flash", "name": "Gemini 2.5 Flash" }
+              ]
+            }
+        """.trimIndent()
+
+        val models = client.parseModelsList(json)
+        assertEquals(3, models.size)
+        // Should be sorted alphabetically
+        assertEquals("anthropic/claude-3.5-sonnet", models[0])
+        assertEquals("google/gemini-2.5-flash", models[1])
+        assertEquals("openai/gpt-4o", models[2])
+    }
 }

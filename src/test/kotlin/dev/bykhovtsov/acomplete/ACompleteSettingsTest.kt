@@ -22,11 +22,12 @@ class ACompleteSettingsTest {
     }
 
     @Test
-    fun testPopularModelsNotEmpty() {
-        assertTrue(ACompleteSettings.POPULAR_MODELS.isNotEmpty())
-        assertTrue(ACompleteSettings.POPULAR_MODELS.contains("anthropic/claude-3.5-sonnet"))
-        assertTrue(ACompleteSettings.POPULAR_MODELS.contains("openai/gpt-4o-mini"))
-        assertTrue(ACompleteSettings.POPULAR_MODELS.contains("deepseek/deepseek-chat"))
-        assertTrue(ACompleteSettings.POPULAR_MODELS.contains("google/gemini-2.5-flash"))
+    fun testCachedModelsState() {
+        val state = ACompleteSettings.State()
+        assertTrue(state.cachedModels.isEmpty())
+
+        state.cachedModels = listOf("model-1", "model-2")
+        assertEquals(2, state.cachedModels.size)
+        assertEquals("model-1", state.cachedModels[0])
     }
 }

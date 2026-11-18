@@ -10,6 +10,7 @@ import dev.bykhovtsov.acomplete.client.model.ChatCompletionRequest
 import dev.bykhovtsov.acomplete.client.model.ChatCompletionResponse
 import dev.bykhovtsov.acomplete.client.model.ChatMessage
 import dev.bykhovtsov.acomplete.client.model.ConnectionTestResult
+import dev.bykhovtsov.acomplete.client.model.ModelsListResponse
 import dev.bykhovtsov.acomplete.client.model.ResponsesApiResponse
 import java.net.URI
 import java.net.http.HttpClient
@@ -232,5 +233,57 @@ class OpenRouterClient(
         } catch (_: Exception) {
             null
         }
+    }
+
+    /**
+     * Resolves the models URL from the base URL.
+     */
+    fun resolveModelsUrl(baseUrl: String): String {
+        val trimmed = baseUrl.trim().trimEnd('/')
+        val root = when {
+            trimmed.endsWith("/chat/completions") -> trimmed.removeSuffix("/chat/completions")
+            trimmed.endsWith("/responses") -> trimmed.removeSuffix("/responses")
+            trimmed.endsWith("/models") -> return trimmed
+            else -> trimmed
+        }
+        return "$root/models"
+    }
+
+    /**
+     * Fetches the list of available model IDs from the endpoint.
+     */
+    fun fetchAvailableModels(baseUrl: String, apiKey: String? = null): List<String> {
+        val url = resolveModelsUrl(baseUrl)
+        val requestBuilder = HttpRequest.newBuilder()
+            .uri(URI.create(url))
+            .header("Accept", "application/json")
+            .header("HTTP-Referer", "https://github.com/stepan-byhkovtsov/a-complete")
+            .header("X-Title", "A-Complete")
+            .timeout(Duration.ofSeconds(15))
+            .GET()
+
+        if (!apiKey.isNullOrBlank()) {
+            requestBuilder.header("Authorization", "Bearer $apiKey")
+        }
+
+        val response = httpClient.send(requestBuilder.build(), HttpResponse.BodyHandlers.ofString())
+        if (response.statusCode() !in 200..299) {
+            val errorMsg = extractErrorMessage(response.body()) ?: "HTTP ${response.statusCode()}"
+            throw RuntimeException("Failed to fetch models: $errorMsg")
+        }
+
+        return parseModelsList(response.body())
+    }
+
+    /**
+     * Parses the models JSON response into a sorted list of model IDs.
+     */
+    fun parseModelsList(jsonBody: String): List<String> {
+        val listResponse = gson.fromJson(jsonBody, ModelsListResponse::class.java)
+        val models = listResponse?.data?.mapNotNull { it.id.trim().takeIf { id -> id.isNotEmpty() } }
+        if (models.isNullOrEmpty()) {
+            throw RuntimeException("No models found in API response")
+        }
+        return models.distinct().sorted()
     }
 }
