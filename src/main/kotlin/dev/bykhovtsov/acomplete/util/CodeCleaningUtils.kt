@@ -10,7 +10,10 @@ object CodeCleaningUtils {
      * If no code blocks exist, strips any trailing/leading backticks or fences.
      */
     fun cleanGeneratedCode(rawText: String): String {
-        val trimmed = rawText.trim()
+        // We shouldn't trim text to maintain models formatting.
+        val trimmed = rawText // rawText.trim()
+
+
         if (trimmed.isEmpty()) return ""
 
         // Case 1: Regex matches standard fenced code block ```lang ... ```

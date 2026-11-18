@@ -15,26 +15,25 @@ data class EditorContext(
 
 object EditorContextExtractor {
 
-    fun extractContext(editor: Editor, maxContextLines: Int = 250): EditorContext {
+    fun extractContext(editor: Editor): EditorContext {
         val document = editor.document
         val selectionModel = editor.selectionModel
 
         val prompt: String
         val insertionOffset: Int
-        val targetLineNumber: Int
         val baseIndentation: String
 
         if (selectionModel.hasSelection()) {
             prompt = selectionModel.selectedText?.trim().orEmpty()
             insertionOffset = selectionModel.selectionEnd
-            targetLineNumber = document.getLineNumber(insertionOffset)
+            val targetLineNumber = document.getLineNumber(insertionOffset)
             val lineStart = document.getLineStartOffset(targetLineNumber)
             val lineEnd = document.getLineEndOffset(targetLineNumber)
             val lineText = document.getText(TextRange(lineStart, lineEnd))
             baseIndentation = lineText.takeWhile { it == ' ' || it == '\t' }
         } else {
             val caretOffset = editor.caretModel.offset
-            targetLineNumber = document.getLineNumber(caretOffset)
+            val targetLineNumber = document.getLineNumber(caretOffset)
             val lineStart = document.getLineStartOffset(targetLineNumber)
             val lineEnd = document.getLineEndOffset(targetLineNumber)
             val currentLineText = document.getText(TextRange(lineStart, lineEnd))
@@ -43,17 +42,7 @@ object EditorContextExtractor {
             baseIndentation = currentLineText.takeWhile { it == ' ' || it == '\t' }
         }
 
-        val totalLines = document.lineCount
-        val surroundingCode = if (totalLines <= maxContextLines) {
-            document.text
-        } else {
-            val linesBefore = (maxContextLines * 0.7).toInt()
-            val startLine = (targetLineNumber - linesBefore).coerceAtLeast(0)
-            val endLine = (startLine + maxContextLines).coerceAtMost(totalLines - 1)
-            val startOffset = document.getLineStartOffset(startLine)
-            val endOffset = document.getLineEndOffset(endLine)
-            document.getText(TextRange(startOffset, endOffset))
-        }
+        val surroundingCode = document.text
 
         val virtualFile = FileDocumentManager.getInstance().getFile(document)
         val fileName = virtualFile?.name ?: "SourceFile"

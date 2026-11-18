@@ -28,9 +28,6 @@ class ACompleteConfigurable : SearchableConfigurable {
     }
     private val apiBaseUrlField = JBTextField()
     private val timeoutField = JBTextField()
-    private val temperatureField = JBTextField()
-    private val maxTokensField = JBTextField()
-    private val contextWindowField = JBTextField()
 
     private val testStatusLabel = JBLabel().apply {
         font = font.deriveFont(Font.PLAIN)
@@ -61,34 +58,16 @@ class ACompleteConfigurable : SearchableConfigurable {
                         .columns(35)
                         .comment(ACompleteBundle.message("settings.apiBaseUrl.comment"))
                 }
-                row {
-                    button(ACompleteBundle.message("settings.testConnection.button")) {
-                        runConnectionTest()
-                    }
-                    cell(testStatusLabel)
-                }
-            }
-
-            collapsibleGroup(ACompleteBundle.message("settings.group.advanced")) {
                 row(ACompleteBundle.message("settings.timeout.label")) {
                     cell(timeoutField)
                         .columns(10)
                         .comment(ACompleteBundle.message("settings.timeout.comment"))
                 }
-                row(ACompleteBundle.message("settings.temperature.label")) {
-                    cell(temperatureField)
-                        .columns(10)
-                        .comment(ACompleteBundle.message("settings.temperature.comment"))
-                }
-                row(ACompleteBundle.message("settings.maxTokens.label")) {
-                    cell(maxTokensField)
-                        .columns(10)
-                        .comment(ACompleteBundle.message("settings.maxTokens.comment"))
-                }
-                row(ACompleteBundle.message("settings.contextWindow.label")) {
-                    cell(contextWindowField)
-                        .columns(10)
-                        .comment(ACompleteBundle.message("settings.contextWindow.comment"))
+                row {
+                    button(ACompleteBundle.message("settings.testConnection.button")) {
+                        runConnectionTest()
+                    }
+                    cell(testStatusLabel)
                 }
             }
         }
@@ -136,9 +115,6 @@ class ACompleteConfigurable : SearchableConfigurable {
 
         if (apiBaseUrlField.text.trim() != state.apiBaseUrl) return true
         if (timeoutField.text.toIntOrNull() != state.timeoutSeconds) return true
-        if (temperatureField.text.toDoubleOrNull() != state.temperature) return true
-        if (maxTokensField.text.toIntOrNull() != state.maxTokens) return true
-        if (contextWindowField.text.toIntOrNull() != state.contextLinesWindow) return true
 
         return false
     }
@@ -154,10 +130,7 @@ class ACompleteConfigurable : SearchableConfigurable {
         }
 
         state.apiBaseUrl = apiBaseUrlField.text.trim().ifEmpty { ACompleteSettings.DEFAULT_API_BASE_URL }
-        timeoutField.text.toIntOrNull()?.let { state.timeoutSeconds = it.coerceIn(1, 120) }
-        temperatureField.text.toDoubleOrNull()?.let { state.temperature = it.coerceIn(0.0, 2.0) }
-        maxTokensField.text.toIntOrNull()?.let { state.maxTokens = it.coerceIn(16, 8192) }
-        contextWindowField.text.toIntOrNull()?.let { state.contextLinesWindow = it.coerceIn(50, 2000) }
+        timeoutField.text.toIntOrNull()?.let { state.timeoutSeconds = it.coerceIn(1, 300) }
     }
 
     private fun refreshModelsList() {
@@ -211,9 +184,6 @@ class ACompleteConfigurable : SearchableConfigurable {
 
         apiBaseUrlField.text = state.apiBaseUrl
         timeoutField.text = state.timeoutSeconds.toString()
-        temperatureField.text = state.temperature.toString()
-        maxTokensField.text = state.maxTokens.toString()
-        contextWindowField.text = state.contextLinesWindow.toString()
         testStatusLabel.text = ""
         modelsStatusLabel.text = ""
     }

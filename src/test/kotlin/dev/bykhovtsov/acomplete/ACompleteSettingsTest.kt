@@ -12,12 +12,9 @@ class ACompleteSettingsTest {
     fun testDefaultStateValues() {
         val state = ACompleteSettings.State()
 
-        assertEquals("anthropic/claude-3.5-sonnet", state.model)
+        assertEquals("~anthropic/claude-haiku-latest", state.model)
         assertEquals("https://openrouter.ai/api/v1", state.apiBaseUrl)
-        assertEquals(15, state.timeoutSeconds)
-        assertEquals(0.2, state.temperature, 0.001)
-        assertEquals(1024, state.maxTokens)
-        assertEquals(250, state.contextLinesWindow)
+        assertEquals(60, state.timeoutSeconds)
         assertEquals("", state.apiKey)
     }
 

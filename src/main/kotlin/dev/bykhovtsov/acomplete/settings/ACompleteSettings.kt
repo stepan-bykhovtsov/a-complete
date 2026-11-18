@@ -17,9 +17,6 @@ class ACompleteSettings : PersistentStateComponent<ACompleteSettings.State> {
         var model: String = DEFAULT_MODEL,
         var apiBaseUrl: String = DEFAULT_API_BASE_URL,
         var timeoutSeconds: Int = DEFAULT_TIMEOUT_SECONDS,
-        var temperature: Double = DEFAULT_TEMPERATURE,
-        var maxTokens: Int = DEFAULT_MAX_TOKENS,
-        var contextLinesWindow: Int = DEFAULT_CONTEXT_LINES_WINDOW,
         var cachedModels: List<String> = emptyList(),
         var apiKey: String = "" // Kept solely for automatic migration from legacy plaintext storage
     )
@@ -40,12 +37,9 @@ class ACompleteSettings : PersistentStateComponent<ACompleteSettings.State> {
     }
 
     companion object {
-        const val DEFAULT_MODEL = "anthropic/claude-3.5-sonnet"
+        const val DEFAULT_MODEL = "~anthropic/claude-haiku-latest"
         const val DEFAULT_API_BASE_URL = "https://openrouter.ai/api/v1"
-        const val DEFAULT_TIMEOUT_SECONDS = 15
-        const val DEFAULT_TEMPERATURE = 0.2
-        const val DEFAULT_MAX_TOKENS = 1024
-        const val DEFAULT_CONTEXT_LINES_WINDOW = 250
+        const val DEFAULT_TIMEOUT_SECONDS = 60
 
         val instance: ACompleteSettings
             get() = ApplicationManager.getApplication().getService(ACompleteSettings::class.java)
