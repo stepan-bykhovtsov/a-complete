@@ -75,6 +75,7 @@ data class ModelsListResponse(
 
 data class ModelItem(
     val id: String,
-    val name: String? = null
+    val name: String? = null,
+    val created: Long? = null
 )
 

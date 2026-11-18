@@ -276,14 +276,20 @@ class OpenRouterClient(
     }
 
     /**
-     * Parses the models JSON response into a sorted list of model IDs.
+     * Parses the models JSON response into a list of model IDs sorted by date (newest first).
      */
     fun parseModelsList(jsonBody: String): List<String> {
         val listResponse = gson.fromJson(jsonBody, ModelsListResponse::class.java)
-        val models = listResponse?.data?.mapNotNull { it.id.trim().takeIf { id -> id.isNotEmpty() } }
-        if (models.isNullOrEmpty()) {
+        val validModels = listResponse?.data?.filter { it.id.isNotBlank() }
+        if (validModels.isNullOrEmpty()) {
             throw RuntimeException("No models found in API response")
         }
-        return models.distinct().sorted()
+        return validModels
+            .sortedWith(
+                compareByDescending<dev.bykhovtsov.acomplete.client.model.ModelItem> { it.created ?: 0L }
+                    .thenBy { it.id }
+            )
+            .map { it.id.trim() }
+            .distinct()
     }
 }

@@ -102,22 +102,22 @@ class OpenRouterClientTest {
     }
 
     @Test
-    fun testParseModelsList() {
+    fun testParseModelsListSortedByDateDescending() {
         val json = """
             {
               "data": [
-                { "id": "openai/gpt-4o", "name": "GPT-4o" },
-                { "id": "anthropic/claude-3.5-sonnet", "name": "Claude 3.5 Sonnet" },
-                { "id": "google/gemini-2.5-flash", "name": "Gemini 2.5 Flash" }
+                { "id": "model/old", "name": "Old Model", "created": 1600000000 },
+                { "id": "model/newest", "name": "Newest Model", "created": 1800000000 },
+                { "id": "model/mid", "name": "Mid Model", "created": 1700000000 }
               ]
             }
         """.trimIndent()
 
         val models = client.parseModelsList(json)
         assertEquals(3, models.size)
-        // Should be sorted alphabetically
-        assertEquals("anthropic/claude-3.5-sonnet", models[0])
-        assertEquals("google/gemini-2.5-flash", models[1])
-        assertEquals("openai/gpt-4o", models[2])
+        // Should be sorted by created descending: newest -> mid -> old
+        assertEquals("model/newest", models[0])
+        assertEquals("model/mid", models[1])
+        assertEquals("model/old", models[2])
     }
 }
