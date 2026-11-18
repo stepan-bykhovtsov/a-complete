@@ -49,12 +49,10 @@ Install the plugin from the JetBrains Marketplace (or build and install from dis
 | Option | Default | Description |
 |---|---|---|
 | **API Key** | *Empty* | OpenRouter or compatible API key. Stored securely in OS Keychain. |
-| **Model** | `anthropic/claude-3.5-sonnet` | Model slug. Editable combo box supporting any OpenRouter or OpenAI model. |
+| **Model** | `~anthropic/claude-haiku-latest` | Model slug. Editable combo box supporting any dynamically fetched or custom model. |
 | **API Base URL** | `https://openrouter.ai/api/v1` | Base URL for API requests. Supports custom self-hosted gateways or direct OpenAI endpoints. |
-| **Timeout (seconds)** | `15` | Request timeout before failing gracefully. |
-| **Temperature** | `0.2` | Sampling temperature (lower = more deterministic code). |
-| **Max Tokens** | `1024` | Maximum tokens to generate, keeping responses fast. |
-| **Context Window** | `250` | Maximum surrounding lines sent to the model for context awareness. |
+| **Timeout (seconds)** | `60` | Request timeout in seconds before failing gracefully (default: 60s). |
+| **Context** | Full File | Sends full file context to the model for comprehensive understanding. |
 
 ---
 

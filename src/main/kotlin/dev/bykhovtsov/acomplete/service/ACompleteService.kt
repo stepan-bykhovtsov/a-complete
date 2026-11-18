@@ -38,8 +38,6 @@ class ACompleteService {
             systemInstruction = systemInstruction,
             userPrompt = userPrompt,
             timeoutSeconds = settings.timeoutSeconds,
-            temperature = settings.temperature,
-            maxTokens = settings.maxTokens,
             indicator = indicator
         )
 

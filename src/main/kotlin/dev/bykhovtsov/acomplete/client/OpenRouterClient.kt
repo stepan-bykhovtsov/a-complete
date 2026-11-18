@@ -43,8 +43,6 @@ class OpenRouterClient(
         systemInstruction: String,
         userPrompt: String,
         timeoutSeconds: Int,
-        temperature: Double,
-        maxTokens: Int,
         indicator: ProgressIndicator? = null
     ): String {
         val endpointUrl = resolveEndpointUrl(baseUrl)
@@ -54,9 +52,7 @@ class OpenRouterClient(
             messages = listOf(
                 ChatMessage(role = "system", content = systemInstruction),
                 ChatMessage(role = "user", content = userPrompt)
-            ),
-            temperature = temperature,
-            maxTokens = maxTokens
+            )
         )
 
         val requestJson = gson.toJson(requestPayload)
