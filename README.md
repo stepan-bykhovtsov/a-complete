@@ -6,7 +6,7 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](LICENSE)
 
 > **A-Complete** is a minimalist, lightning-fast AI code completion plugin for JetBrains IDEs.
-> It takes you from pressing <kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>\</kbd> to having clean, contextually aware code inserted directly into your editor in **~1.5 seconds**.
+> It takes you from pressing <kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>\\</kbd> to having clean, contextually aware code inserted directly into your editor in **~1.5 seconds**.
 
 ---
 
@@ -30,7 +30,7 @@ Install the plugin from the JetBrains Marketplace (or build and install from dis
 1. Open **Settings / Preferences** (<kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>S</kbd> or <kbd>⌘</kbd> + <kbd>,</kbd>).
 2. Navigate to **Tools &rarr; A-Complete**.
 3. Paste your [OpenRouter API Key](https://openrouter.ai/keys) (or your preferred OpenAI-compatible key).
-4. Choose or type your model (e.g., `anthropic/claude-3.5-sonnet`, `openai/gpt-4o-mini`, `deepseek/deepseek-chat`).
+4. Choose or type your model.
 5. Click **Test Connection** to verify latency and connectivity.
 6. Click **Apply & OK**.
 
@@ -39,7 +39,7 @@ Install the plugin from the JetBrains Marketplace (or build and install from dis
    ```kotlin
    // sort list of users by age ascending and take top 5
    ```
-2. Press <kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>\</kbd> (or right-click and choose **A-Complete: Generate Code**, or use **Code &rarr; Generate...**).
+2. Press <kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>\\</kbd> (or right-click and choose **A-Complete: Generate Code**, or use **Code &rarr; Generate...**).
 3. The generated snippet is inserted right below your comment with the caret positioned at the end, ready to keep typing!
 
 ---
