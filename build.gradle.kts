@@ -6,6 +6,10 @@ plugins {
     id("org.jetbrains.intellij.platform")
 }
 
+kotlin {
+    jvmToolchain(25)
+}
+
 dependencies {
     testImplementation(libs.junit)
 
