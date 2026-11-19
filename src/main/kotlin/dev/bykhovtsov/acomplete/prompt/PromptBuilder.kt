@@ -1,5 +1,6 @@
 package dev.bykhovtsov.acomplete.prompt
 
+import dev.bykhovtsov.acomplete.header.IncludeType
 import dev.bykhovtsov.acomplete.util.EditorContext
 
 object PromptBuilder {
@@ -19,8 +20,32 @@ Strict rules:
             "File: ${context.fileName}"
         }
 
+        val headersSection = if (context.includedHeaders.isNotEmpty()) {
+            val headersContent = context.includedHeaders.joinToString("\n\n") { header ->
+                val includeStr = if (header.includeType == IncludeType.ANGLE) {
+                    "#include <${header.includePath}>"
+                } else {
+                    "#include \"${header.includePath}\""
+                }
+                """
+                |Header: $includeStr (resolved: ${header.resolvedPath})
+                |```
+                |${header.content}
+                |```
+                """.trimMargin()
+            }
+            """
+            |Included Headers:
+            |$headersContent
+            """.trimMargin()
+        } else {
+            ""
+        }
+
+        val headerBlock = if (headersSection.isNotEmpty()) "\n\n$headersSection" else ""
+
         return """
-            |$langInfo
+            |$langInfo$headerBlock
             |
             |Context:
             |```

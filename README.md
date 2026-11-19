@@ -53,6 +53,7 @@ Install the plugin from the JetBrains Marketplace (or build and install from dis
 | **API Base URL** | `https://openrouter.ai/api/v1` | Base URL for API requests. Supports custom self-hosted gateways or direct OpenAI endpoints. |
 | **Timeout (seconds)** | `60` | Request timeout in seconds before failing gracefully (default: 60s). |
 | **Context** | Full File | Sends full file context to the model for comprehensive understanding. |
+| **C/C++ Header Context** | Enabled (Depth 3) | Automatically extracts and attaches `#include` header contents into model prompt with configurable exploration depth (`0`, `1`, `3`, `inf`, `custom`) and `#include ""` vs `<>` filtering. |
 
 ---
 
@@ -68,6 +69,11 @@ src/main/kotlin/dev/bykhovtsov/acomplete/
 │   ├── OpenRouterClient.kt         # HTTP/2 connection pooling, cancellation-aware, dual endpoint parser
 │   └── model/
 │       └── OpenRouterDto.kt        # Strongly-typed Gson DTOs (Chat & Responses APIs)
+├── header/
+│   ├── CHeaderResolver.kt          # Transitive BFS #include resolver distinguishing quotes and angle brackets
+│   ├── HeaderFileContext.kt        # Header context DTO with resolved paths and content
+│   ├── IncludeDirective.kt         # Parsed include directive model
+│   └── IncludeType.kt              # Enum separating local QUOTE ("") and system/project ANGLE (<>)
 ├── notification/
 │   └── ACompleteNotifier.kt        # Native balloon notifications with action links
 ├── prompt/

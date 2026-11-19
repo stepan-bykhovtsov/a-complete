@@ -14,7 +14,7 @@ object CodeCleaningUtils {
         val trimmed = rawText // rawText.trim()
 
 
-        if (trimmed.isEmpty()) return ""
+        if (trimmed.isBlank()) return ""
 
         // Case 1: Regex matches standard fenced code block ```lang ... ```
         val match = CODE_BLOCK_REGEX.find(trimmed)

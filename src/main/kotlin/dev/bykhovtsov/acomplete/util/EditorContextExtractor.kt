@@ -2,7 +2,11 @@ package dev.bykhovtsov.acomplete.util
 
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileEditor.FileDocumentManager
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.TextRange
+import dev.bykhovtsov.acomplete.header.CHeaderResolver
+import dev.bykhovtsov.acomplete.header.HeaderFileContext
+import dev.bykhovtsov.acomplete.settings.ACompleteSettings
 
 data class EditorContext(
     val prompt: String,
@@ -10,12 +14,13 @@ data class EditorContext(
     val insertionOffset: Int,
     val surroundingCode: String,
     val fileName: String,
-    val fileExtension: String
+    val fileExtension: String,
+    val includedHeaders: List<HeaderFileContext> = emptyList()
 )
 
 object EditorContextExtractor {
 
-    fun extractContext(editor: Editor): EditorContext {
+    fun extractContext(editor: Editor, project: Project? = editor.project): EditorContext {
         val document = editor.document
         val selectionModel = editor.selectionModel
 
@@ -48,13 +53,26 @@ object EditorContextExtractor {
         val fileName = virtualFile?.name ?: "SourceFile"
         val fileExtension = virtualFile?.extension ?: ""
 
+        val includedHeaders = if (project != null && CHeaderResolver.isCSourceOrHeader(fileExtension)) {
+            val settings = ACompleteSettings.instance.state
+            CHeaderResolver.resolveHeaders(
+                project = project,
+                currentFile = virtualFile,
+                fileContent = surroundingCode,
+                settings = settings
+            )
+        } else {
+            emptyList()
+        }
+
         return EditorContext(
             prompt = prompt,
             baseIndentation = baseIndentation,
             insertionOffset = insertionOffset,
             surroundingCode = surroundingCode,
             fileName = fileName,
-            fileExtension = fileExtension
+            fileExtension = fileExtension,
+            includedHeaders = includedHeaders
         )
     }
 }

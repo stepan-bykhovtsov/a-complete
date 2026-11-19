@@ -3,6 +3,7 @@ package dev.bykhovtsov.acomplete.settings
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.options.SearchableConfigurable
 import com.intellij.ui.JBColor
+import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBPasswordField
 import com.intellij.ui.components.JBTextField
@@ -32,6 +33,13 @@ class ACompleteConfigurable : SearchableConfigurable {
     private val testStatusLabel = JBLabel().apply {
         font = font.deriveFont(Font.PLAIN)
     }
+
+    // C / C++ Header Context UI components
+    private val includeHeadersCheckBox = JBCheckBox(ACompleteBundle.message("settings.includeHeaders.label"))
+    private val headerDepthComboBox = JComboBox(ACompleteSettings.DEPTH_PRESETS)
+    private val customDepthField = JBTextField()
+    private val includeQuoteHeadersCheckBox = JBCheckBox(ACompleteBundle.message("settings.includeQuoteHeaders.label"))
+    private val includeAngleHeadersCheckBox = JBCheckBox(ACompleteBundle.message("settings.includeAngleHeaders.label"))
 
     override fun getId(): String = "dev.bykhovtsov.acomplete.settings.ACompleteConfigurable"
 
@@ -70,7 +78,30 @@ class ACompleteConfigurable : SearchableConfigurable {
                     cell(testStatusLabel)
                 }
             }
+
+            group(ACompleteBundle.message("settings.group.cHeaderContext")) {
+                row {
+                    cell(includeHeadersCheckBox)
+                        .comment(ACompleteBundle.message("settings.includeHeaders.comment"))
+                }
+                row(ACompleteBundle.message("settings.headerDepth.label")) {
+                    cell(headerDepthComboBox)
+                        .comment(ACompleteBundle.message("settings.headerDepth.comment"))
+                    cell(customDepthField)
+                        .columns(5)
+                        .comment(ACompleteBundle.message("settings.customDepth.comment"))
+                }
+                row(ACompleteBundle.message("settings.includeTypes.label")) {
+                    cell(includeQuoteHeadersCheckBox)
+                        .comment(ACompleteBundle.message("settings.includeQuoteHeaders.comment"))
+                    cell(includeAngleHeadersCheckBox)
+                        .comment(ACompleteBundle.message("settings.includeAngleHeaders.comment"))
+                }
+            }
         }
+
+        includeHeadersCheckBox.addActionListener { updateHeadersUiState() }
+        headerDepthComboBox.addActionListener { updateHeadersUiState() }
 
         reset()
         return rootPanel
@@ -116,6 +147,13 @@ class ACompleteConfigurable : SearchableConfigurable {
         if (apiBaseUrlField.text.trim() != state.apiBaseUrl) return true
         if (timeoutField.text.toIntOrNull() != state.timeoutSeconds) return true
 
+        if (includeHeadersCheckBox.isSelected != state.includeHeadersEnabled) return true
+        val currentPreset = headerDepthComboBox.selectedItem?.toString() ?: ACompleteSettings.DEPTH_PRESET_3
+        if (currentPreset != getDepthPresetItem(state.headerSearchDepthPreset)) return true
+        if (customDepthField.text.toIntOrNull() != state.customHeaderSearchDepth) return true
+        if (includeQuoteHeadersCheckBox.isSelected != state.includeQuoteHeaders) return true
+        if (includeAngleHeadersCheckBox.isSelected != state.includeAngleHeaders) return true
+
         return false
     }
 
@@ -131,6 +169,12 @@ class ACompleteConfigurable : SearchableConfigurable {
 
         state.apiBaseUrl = apiBaseUrlField.text.trim().ifEmpty { ACompleteSettings.DEFAULT_API_BASE_URL }
         timeoutField.text.toIntOrNull()?.let { state.timeoutSeconds = it.coerceIn(1, 300) }
+
+        state.includeHeadersEnabled = includeHeadersCheckBox.isSelected
+        state.headerSearchDepthPreset = headerDepthComboBox.selectedItem?.toString() ?: ACompleteSettings.DEPTH_PRESET_3
+        customDepthField.text.toIntOrNull()?.let { state.customHeaderSearchDepth = it.coerceIn(1, 1000) }
+        state.includeQuoteHeaders = includeQuoteHeadersCheckBox.isSelected
+        state.includeAngleHeaders = includeAngleHeadersCheckBox.isSelected
     }
 
     private fun refreshModelsList() {
@@ -186,5 +230,33 @@ class ACompleteConfigurable : SearchableConfigurable {
         timeoutField.text = state.timeoutSeconds.toString()
         testStatusLabel.text = ""
         modelsStatusLabel.text = ""
+
+        includeHeadersCheckBox.isSelected = state.includeHeadersEnabled
+        headerDepthComboBox.selectedItem = getDepthPresetItem(state.headerSearchDepthPreset)
+        customDepthField.text = state.customHeaderSearchDepth.toString()
+        includeQuoteHeadersCheckBox.isSelected = state.includeQuoteHeaders
+        includeAngleHeadersCheckBox.isSelected = state.includeAngleHeaders
+        updateHeadersUiState()
+    }
+
+    private fun getDepthPresetItem(savedPreset: String): String {
+        val lower = savedPreset.trim().lowercase()
+        return when {
+            lower.startsWith("0") || lower.contains("off") -> ACompleteSettings.DEPTH_PRESET_0
+            lower.startsWith("1") -> ACompleteSettings.DEPTH_PRESET_1
+            lower.startsWith("3") -> ACompleteSettings.DEPTH_PRESET_3
+            lower.contains("inf") || lower.contains("entire") || lower.contains("unlimited") -> ACompleteSettings.DEPTH_PRESET_INF
+            lower.contains("custom") -> ACompleteSettings.DEPTH_PRESET_CUSTOM
+            else -> ACompleteSettings.DEPTH_PRESET_CUSTOM
+        }
+    }
+
+    private fun updateHeadersUiState() {
+        val enabled = includeHeadersCheckBox.isSelected
+        headerDepthComboBox.isEnabled = enabled
+        val isCustom = headerDepthComboBox.selectedItem == ACompleteSettings.DEPTH_PRESET_CUSTOM
+        customDepthField.isEnabled = enabled && isCustom
+        includeQuoteHeadersCheckBox.isEnabled = enabled
+        includeAngleHeadersCheckBox.isEnabled = enabled
     }
 }
