@@ -10,10 +10,10 @@
 
 ---
 
-## ⚡ Why A-Complete?
+## Why A-Complete?
 
 - **Minimalist & Blazing Fast:** Zero bloat, zero intrusive tool windows or heavy panels. Press the shortcut and get code generated immediately.
-- **Powered by OpenRouter & OpenAI Standards:** Use any top-tier model via OpenRouter (Claude 3.5 Sonnet, GPT-4o, DeepSeek V3/R1, Gemini 2.5 Flash, Qwen 2.5 Coder, Llama 3.3) or point to any OpenAI-compatible endpoint (OpenAI, LocalAI, Ollama, DeepSeek API).
+- **Powered by OpenRouter & OpenAI Standards:** Use any top-tier model via OpenRouter (recommended) or point to any OpenAI-compatible endpoint (OpenAI, LocalAI, Ollama, DeepSeek API).
 - **Enterprise-Grade Security:** API keys are never stored in plain-text configuration files or committed to VCS. Keys are securely stored in your operating system's Credential Store via IntelliJ's `PasswordSafe`.
 - **Non-Intrusive UX:** Errors and misconfigurations are surfaced via clean native balloon notifications with direct action buttons, rather than corrupting your source files with error comments.
 - **Smart Indentation & Context:** Intelligently extracts surrounding file context, detects language and file types, and matches prompt indentation for seamless code insertion.
@@ -21,7 +21,7 @@
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### 1. Installation
 Install the plugin from the JetBrains Marketplace (or build and install from disk).
@@ -44,7 +44,7 @@ Install the plugin from the JetBrains Marketplace (or build and install from dis
 
 ---
 
-## ⚙️ Configuration Options
+## Configuration Options
 
 | Option | Default | Description |
 |---|---|---|
@@ -57,7 +57,7 @@ Install the plugin from the JetBrains Marketplace (or build and install from dis
 
 ---
 
-## 🏗️ Architecture & Best Practices
+## Architecture & Best Practices
 
 The codebase is engineered strictly following [JetBrains Platform SDK Best Practices](https://plugins.jetbrains.com/docs/intellij):
 
@@ -92,7 +92,7 @@ src/main/kotlin/dev/bykhovtsov/acomplete/
 
 ---
 
-## 🛠️ Building & Developing
+## Building & Developing
 
 ### Requirements
 - JDK 25
@@ -119,6 +119,6 @@ src/main/kotlin/dev/bykhovtsov/acomplete/
 
 ---
 
-## 📄 License
+## License
 
 Apache License 2.0. See [LICENSE](LICENSE) for details.
