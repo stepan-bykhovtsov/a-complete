@@ -38,6 +38,32 @@ class FileMentionResolverTest {
     }
 
     @Test
+    fun testExtractMentionWithTrailingPunctuation() {
+        val textWithComma = "// TODO: Add text from @file:screenshot.png, removing comments"
+        val mentionsComma = FileMentionResolver.extractMentionPaths(textWithComma)
+        assertEquals(1, mentionsComma.size)
+        assertEquals("screenshot.png", mentionsComma["@file:screenshot.png"])
+
+        val textWithPeriod = "// Please review @file:spec.pdf."
+        val mentionsPeriod = FileMentionResolver.extractMentionPaths(textWithPeriod)
+        assertEquals("spec.pdf", mentionsPeriod["@file:spec.pdf"])
+
+        val textWithParen = "// See (@file:diagram.png) for details"
+        val mentionsParen = FileMentionResolver.extractMentionPaths(textWithParen)
+        assertEquals("diagram.png", mentionsParen["@file:diagram.png"])
+
+        val textWithSemi = "// load @file:data.json; process next"
+        val mentionsSemi = FileMentionResolver.extractMentionPaths(textWithSemi)
+        assertEquals("data.json", mentionsSemi["@file:data.json"])
+
+        val textWithComplex = "// Compare (@file:a.png) and (@file:b.png), then merge"
+        val mentionsComplex = FileMentionResolver.extractMentionPaths(textWithComplex)
+        assertEquals(2, mentionsComplex.size)
+        assertEquals("a.png", mentionsComplex["@file:a.png"])
+        assertEquals("b.png", mentionsComplex["@file:b.png"])
+    }
+
+    @Test
     fun testIgnoresNonMentionText() {
         val text = "Contact support@example.com or user@domain.org for info"
         val mentions = FileMentionResolver.extractMentionPaths(text)

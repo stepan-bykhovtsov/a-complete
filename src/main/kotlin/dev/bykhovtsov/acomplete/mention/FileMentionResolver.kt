@@ -19,6 +19,10 @@ object FileMentionResolver {
     // Secondary match for @path/to/file.ext (must contain a dot or slash to avoid false positives)
     private val AT_MENTION_REGEX = Regex("""@(?:"([^"]+)"|([^\s\r\n]+))""")
 
+    val TRAILING_PUNCTUATION = charArrayOf(
+        ',', '.', ';', ':', '!', '?', ')', ']', '}', '>', '\'', '"'
+    )
+
     val IMAGE_EXTENSIONS = mapOf(
         "png" to "image/png",
         "jpg" to "image/jpeg",
@@ -37,9 +41,18 @@ object FileMentionResolver {
         val mentionedPaths = LinkedHashMap<String, String>()
 
         for (match in FILE_MENTION_REGEX.findAll(text)) {
-            val raw = match.value
-            val path = match.groupValues[1].ifEmpty { match.groupValues[2] }
-            mentionedPaths[raw] = path
+            val isQuoted = match.groupValues[1].isNotEmpty()
+            if (isQuoted) {
+                val path = match.groupValues[1]
+                mentionedPaths[match.value] = path
+            } else {
+                val unquoted = match.groupValues[2]
+                val trimmedPath = unquoted.trimEnd(*TRAILING_PUNCTUATION)
+                if (trimmedPath.isNotEmpty()) {
+                    val rawMention = "@file:$trimmedPath"
+                    mentionedPaths[rawMention] = trimmedPath
+                }
+            }
         }
 
         return mentionedPaths
@@ -66,12 +79,17 @@ object FileMentionResolver {
         for (match in AT_MENTION_REGEX.findAll(text)) {
             val raw = match.value
             if (raw.startsWith("@file:")) continue
-            val path = match.groupValues[1].ifEmpty { match.groupValues[2] }
-            if (path.contains('.') || path.contains('/')) {
+            val isQuoted = match.groupValues[1].isNotEmpty()
+            val path = if (isQuoted) {
+                match.groupValues[1]
+            } else {
+                match.groupValues[2].trimEnd(*TRAILING_PUNCTUATION)
+            }
+            if (path.isNotEmpty() && (path.contains('.') || path.contains('/'))) {
                 val normalized = path.replace('\\', '/').trimStart('/')
                 val vf = projectDir.findFileByRelativePath(normalized) ?: findFileInRoots(project, normalized)
                 if (vf != null && !vf.isDirectory) {
-                    mentionedPaths.putIfAbsent(raw, path)
+                    mentionedPaths.putIfAbsent("@$path", path)
                 }
             }
         }
@@ -79,8 +97,15 @@ object FileMentionResolver {
         val results = mutableListOf<MentionedFile>()
         for ((raw, rawPath) in mentionedPaths) {
             val normalized = rawPath.replace('\\', '/').trimStart('/')
-            val virtualFile = projectDir.findFileByRelativePath(normalized)
+            var virtualFile = projectDir.findFileByRelativePath(normalized)
                 ?: findFileInRoots(project, normalized)
+
+            if (virtualFile == null || virtualFile.isDirectory || !virtualFile.isValid) {
+                val trimmed = normalized.trimEnd(*TRAILING_PUNCTUATION)
+                if (trimmed.isNotEmpty() && trimmed != normalized) {
+                    virtualFile = projectDir.findFileByRelativePath(trimmed) ?: findFileInRoots(project, trimmed)
+                }
+            }
 
             if (virtualFile == null || virtualFile.isDirectory || !virtualFile.isValid) {
                 if (raw.startsWith("@file:")) {
