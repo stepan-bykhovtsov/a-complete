@@ -10,18 +10,19 @@
 
 ---
 
-## ⚡ Why A-Complete?
+## Why A-Complete?
 
 - **Minimalist & Blazing Fast:** Zero bloat, zero intrusive tool windows or heavy panels. Press the shortcut and get code generated immediately.
-- **Powered by OpenRouter & OpenAI Standards:** Use any top-tier model via OpenRouter (Claude 3.5 Sonnet, GPT-4o, DeepSeek V3/R1, Gemini 2.5 Flash, Qwen 2.5 Coder, Llama 3.3) or point to any OpenAI-compatible endpoint (OpenAI, LocalAI, Ollama, DeepSeek API).
+- **Powered by OpenRouter & OpenAI Standards:** Use any top-tier model via OpenRouter (recommended) or point to any OpenAI-compatible endpoint (OpenAI, LocalAI, Ollama, DeepSeek API).
 - **Enterprise-Grade Security:** API keys are never stored in plain-text configuration files or committed to VCS. Keys are securely stored in your operating system's Credential Store via IntelliJ's `PasswordSafe`.
 - **Non-Intrusive UX:** Errors and misconfigurations are surfaced via clean native balloon notifications with direct action buttons, rather than corrupting your source files with error comments.
 - **Smart Indentation & Context:** Intelligently extracts surrounding file context, detects language and file types, and matches prompt indentation for seamless code insertion.
+- **Context Mentions via `@file`:** Reference any project file in your prompt using `@file:path/to/file`. Auto-completes available project files when typing `@...` in comments. Code and text files are attached directly into the prompt context; images and PDFs are automatically encoded and sent as multimodal attachments conforming to OpenRouter / OpenAI standards.
 - **Resilient & Thread-Safe:** Uses IntelliJ `RangeMarker` to track insertion points even if you edit text while the request is in flight. Generates code as a single atomic undoable command (`Ctrl+Z`).
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### 1. Installation
 Install the plugin from the JetBrains Marketplace (or build and install from disk).
@@ -44,7 +45,7 @@ Install the plugin from the JetBrains Marketplace (or build and install from dis
 
 ---
 
-## ⚙️ Configuration Options
+## Configuration Options
 
 | Option | Default | Description |
 |---|---|---|
@@ -57,7 +58,7 @@ Install the plugin from the JetBrains Marketplace (or build and install from dis
 
 ---
 
-## 🏗️ Architecture & Best Practices
+## Architecture & Best Practices
 
 The codebase is engineered strictly following [JetBrains Platform SDK Best Practices](https://plugins.jetbrains.com/docs/intellij):
 
@@ -74,6 +75,13 @@ src/main/kotlin/dev/bykhovtsov/acomplete/
 │   ├── HeaderFileContext.kt        # Header context DTO with resolved paths and content
 │   ├── IncludeDirective.kt         # Parsed include directive model
 │   └── IncludeType.kt              # Enum separating local QUOTE ("") and system/project ANGLE (<>)
+├── mention/
+│   ├── FileMentionCompletionContributor.kt # Autocompletion contributor for @file mentions in comments
+│   ├── FileMentionResolver.kt      # Mention parser, path resolver, and MIME classifier
+│   ├── FileMentionTypedHandler.kt  # Auto-popup trigger on typing '@' inside comments
+│   ├── MentionedFile.kt            # Mentioned file data model (text and multimodal)
+│   ├── MentionedFileType.kt        # File type classification (TEXT, IMAGE, PDF)
+│   └── ProjectFileUtils.kt         # Project file discovery and exclusion filters
 ├── notification/
 │   └── ACompleteNotifier.kt        # Native balloon notifications with action links
 ├── prompt/
@@ -92,7 +100,7 @@ src/main/kotlin/dev/bykhovtsov/acomplete/
 
 ---
 
-## 🛠️ Building & Developing
+## Building & Developing
 
 ### Requirements
 - JDK 25
@@ -119,6 +127,6 @@ src/main/kotlin/dev/bykhovtsov/acomplete/
 
 ---
 
-## 📄 License
+## License
 
 Apache License 2.0. See [LICENSE](LICENSE) for details.

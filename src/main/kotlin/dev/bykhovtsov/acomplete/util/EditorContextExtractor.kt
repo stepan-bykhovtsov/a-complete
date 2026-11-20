@@ -6,6 +6,8 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.TextRange
 import dev.bykhovtsov.acomplete.header.CHeaderResolver
 import dev.bykhovtsov.acomplete.header.HeaderFileContext
+import dev.bykhovtsov.acomplete.mention.FileMentionResolver
+import dev.bykhovtsov.acomplete.mention.MentionedFile
 import dev.bykhovtsov.acomplete.settings.ACompleteSettings
 
 data class EditorContext(
@@ -15,7 +17,8 @@ data class EditorContext(
     val surroundingCode: String,
     val fileName: String,
     val fileExtension: String,
-    val includedHeaders: List<HeaderFileContext> = emptyList()
+    val includedHeaders: List<HeaderFileContext> = emptyList(),
+    val mentionedFiles: List<MentionedFile> = emptyList()
 )
 
 object EditorContextExtractor {
@@ -65,6 +68,12 @@ object EditorContextExtractor {
             emptyList()
         }
 
+        val mentionedFiles = if (project != null && prompt.isNotBlank()) {
+            FileMentionResolver.resolveMentions(prompt, project)
+        } else {
+            emptyList()
+        }
+
         return EditorContext(
             prompt = prompt,
             baseIndentation = baseIndentation,
@@ -72,7 +81,8 @@ object EditorContextExtractor {
             surroundingCode = surroundingCode,
             fileName = fileName,
             fileExtension = fileExtension,
-            includedHeaders = includedHeaders
+            includedHeaders = includedHeaders,
+            mentionedFiles = mentionedFiles
         )
     }
 }

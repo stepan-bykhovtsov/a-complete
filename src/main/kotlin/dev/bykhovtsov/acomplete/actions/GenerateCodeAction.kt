@@ -40,7 +40,12 @@ class GenerateCodeAction : AnAction() {
             return
         }
 
-        val context = EditorContextExtractor.extractContext(editor, project)
+        val context = try {
+            EditorContextExtractor.extractContext(editor, project)
+        } catch (ex: Exception) {
+            ACompleteNotifier.notifyError(project, ex.message ?: "Failed to extract context")
+            return
+        }
 
         if (context.prompt.isBlank()) {
             ACompleteNotifier.notifyError(project, ACompleteBundle.message("action.error.empty.prompt"))
