@@ -1,5 +1,7 @@
 package dev.bykhovtsov.acomplete
 
+import dev.bykhovtsov.acomplete.mention.MentionedFile
+import dev.bykhovtsov.acomplete.mention.MentionedFileType
 import dev.bykhovtsov.acomplete.prompt.PromptBuilder
 import dev.bykhovtsov.acomplete.util.EditorContext
 import org.junit.Assert.assertTrue
@@ -70,5 +72,71 @@ class PromptBuilderTest {
         assertTrue(instruction.contains("code completion engine"))
         assertTrue(instruction.contains("Output pure code only"))
         assertTrue(instruction.contains("no ```"))
+    }
+
+    @Test
+    fun testBuildUserPromptWithTextMention() {
+        val mentionedFiles = listOf(
+            MentionedFile(
+                rawMention = "@file:models/User.kt",
+                relativePath = "models/User.kt",
+                type = MentionedFileType.TEXT,
+                mimeType = "text/plain",
+                textContent = "data class User(val id: Int, val name: String)"
+            )
+        )
+
+        val context = EditorContext(
+            prompt = "// create user from @file:models/User.kt",
+            baseIndentation = "    ",
+            insertionOffset = 45,
+            surroundingCode = "fun main() {\n    // create user from @file:models/User.kt\n}",
+            fileName = "Main.kt",
+            fileExtension = "kt",
+            mentionedFiles = mentionedFiles
+        )
+
+        val userPrompt = PromptBuilder.buildUserPrompt(context)
+
+        assertTrue(userPrompt.contains("Referenced Files:"))
+        assertTrue(userPrompt.contains("Referenced File: models/User.kt"))
+        assertTrue(userPrompt.contains("data class User(val id: Int, val name: String)"))
+        assertTrue(userPrompt.contains("// create user from @file:models/User.kt"))
+    }
+
+    @Test
+    fun testBuildUserPromptWithBinaryMentions() {
+        val mentionedFiles = listOf(
+            MentionedFile(
+                rawMention = "@file:assets/mockup.png",
+                relativePath = "assets/mockup.png",
+                type = MentionedFileType.IMAGE,
+                mimeType = "image/png",
+                base64DataUrl = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUg=="
+            ),
+            MentionedFile(
+                rawMention = "@file:docs/spec.pdf",
+                relativePath = "docs/spec.pdf",
+                type = MentionedFileType.PDF,
+                mimeType = "application/pdf",
+                base64DataUrl = "data:application/pdf;base64,JVBERi0xLjQK"
+            )
+        )
+
+        val context = EditorContext(
+            prompt = "// implement UI matching @file:assets/mockup.png per @file:docs/spec.pdf",
+            baseIndentation = "    ",
+            insertionOffset = 80,
+            surroundingCode = "// implement UI matching @file:assets/mockup.png per @file:docs/spec.pdf",
+            fileName = "App.kt",
+            fileExtension = "kt",
+            mentionedFiles = mentionedFiles
+        )
+
+        val userPrompt = PromptBuilder.buildUserPrompt(context)
+
+        assertTrue(userPrompt.contains("Referenced Attachments:"))
+        assertTrue(userPrompt.contains("- Attached image: assets/mockup.png"))
+        assertTrue(userPrompt.contains("- Attached document: docs/spec.pdf"))
     }
 }

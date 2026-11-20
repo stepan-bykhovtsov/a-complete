@@ -1,6 +1,7 @@
 package dev.bykhovtsov.acomplete.client
 
 import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.progress.ProcessCanceledException
 import com.intellij.openapi.progress.ProgressIndicator
@@ -10,6 +11,9 @@ import dev.bykhovtsov.acomplete.client.model.ChatCompletionRequest
 import dev.bykhovtsov.acomplete.client.model.ChatCompletionResponse
 import dev.bykhovtsov.acomplete.client.model.ChatMessage
 import dev.bykhovtsov.acomplete.client.model.ConnectionTestResult
+import dev.bykhovtsov.acomplete.client.model.ContentPart
+import dev.bykhovtsov.acomplete.client.model.FileAttachment
+import dev.bykhovtsov.acomplete.client.model.ImageUrl
 import dev.bykhovtsov.acomplete.client.model.ModelsListResponse
 import dev.bykhovtsov.acomplete.client.model.ResponsesApiResponse
 import java.net.URI
@@ -26,7 +30,7 @@ class OpenRouterClient(
     private val connectTimeoutSeconds: Long = 10L
 ) {
     private val logger = Logger.getInstance(OpenRouterClient::class.java)
-    private val gson = Gson()
+    val gson = GsonBuilder().disableHtmlEscaping().create()
 
     private val httpClient: HttpClient = HttpClient.newBuilder()
         .version(HttpClient.Version.HTTP_2)
@@ -42,16 +46,28 @@ class OpenRouterClient(
         baseUrl: String,
         systemInstruction: String,
         userPrompt: String,
+        attachments: List<FileAttachment> = emptyList(),
         timeoutSeconds: Int,
         indicator: ProgressIndicator? = null
     ): String {
         val endpointUrl = resolveEndpointUrl(baseUrl)
 
+        val userMessage = if (attachments.isEmpty()) {
+            ChatMessage(role = "user", content = userPrompt)
+        } else {
+            val parts = mutableListOf<ContentPart>()
+            parts.add(ContentPart(type = "text", text = userPrompt))
+            for (attachment in attachments) {
+                parts.add(ContentPart(type = "image_url", imageUrl = ImageUrl(url = attachment.dataUrl)))
+            }
+            ChatMessage(role = "user", content = parts)
+        }
+
         val requestPayload = ChatCompletionRequest(
             model = model,
             messages = listOf(
                 ChatMessage(role = "system", content = systemInstruction),
-                ChatMessage(role = "user", content = userPrompt)
+                userMessage
             )
         )
 
@@ -191,7 +207,7 @@ class OpenRouterClient(
         // Try ChatCompletionResponse
         try {
             val chatResponse = gson.fromJson(responseBody, ChatCompletionResponse::class.java)
-            val choiceContent = chatResponse?.choices?.firstOrNull()?.message?.content
+            val choiceContent = chatResponse?.choices?.firstOrNull()?.message?.getContentText()
             if (!choiceContent.isNullOrBlank()) {
                 return choiceContent
             }

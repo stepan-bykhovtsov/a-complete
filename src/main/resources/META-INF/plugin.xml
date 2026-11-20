@@ -47,6 +47,12 @@
                 instance="dev.bykhovtsov.acomplete.settings.ACompleteConfigurable"
                 id="dev.bykhovtsov.acomplete.settings.ACompleteConfigurable"
                 displayName="A-Complete"/>
+
+        <completion.contributor
+                language="any"
+                implementationClass="dev.bykhovtsov.acomplete.mention.FileMentionCompletionContributor"/>
+
+        <typedHandler implementation="dev.bykhovtsov.acomplete.mention.FileMentionTypedHandler"/>
     </extensions>
 
     <actions>
