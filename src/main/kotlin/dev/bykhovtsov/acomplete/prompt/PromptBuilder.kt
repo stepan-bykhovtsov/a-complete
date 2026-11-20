@@ -1,6 +1,7 @@
 package dev.bykhovtsov.acomplete.prompt
 
 import dev.bykhovtsov.acomplete.header.IncludeType
+import dev.bykhovtsov.acomplete.mention.MentionedFileType
 import dev.bykhovtsov.acomplete.util.EditorContext
 
 object PromptBuilder {
@@ -44,8 +45,42 @@ Strict rules:
 
         val headerBlock = if (headersSection.isNotEmpty()) "\n\n$headersSection" else ""
 
+        val textMentions = context.mentionedFiles.filter { it.type == MentionedFileType.TEXT }
+        val mentionsSection = if (textMentions.isNotEmpty()) {
+            val filesContent = textMentions.joinToString("\n\n") { file ->
+                """
+                |Referenced File: ${file.relativePath}
+                |```
+                |${file.textContent}
+                |```
+                """.trimMargin()
+            }
+            """
+            |Referenced Files:
+            |$filesContent
+            """.trimMargin()
+        } else {
+            ""
+        }
+        val mentionsBlock = if (mentionsSection.isNotEmpty()) "\n\n$mentionsSection" else ""
+
+        val binaryMentions = context.mentionedFiles.filter { it.type == MentionedFileType.IMAGE || it.type == MentionedFileType.PDF }
+        val attachmentsSection = if (binaryMentions.isNotEmpty()) {
+            val attachmentsContent = binaryMentions.joinToString("\n") { file ->
+                val kind = if (file.type == MentionedFileType.PDF) "document" else "image"
+                "- Attached $kind: ${file.relativePath}"
+            }
+            """
+            |Referenced Attachments:
+            |$attachmentsContent
+            """.trimMargin()
+        } else {
+            ""
+        }
+        val attachmentsBlock = if (attachmentsSection.isNotEmpty()) "\n\n$attachmentsSection" else ""
+
         return """
-            |$langInfo$headerBlock
+            |$langInfo$headerBlock$mentionsBlock$attachmentsBlock
             |
             |Context:
             |```

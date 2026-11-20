@@ -13,7 +13,39 @@ data class ChatCompletionRequest(
 
 data class ChatMessage(
     val role: String,
-    val content: String
+    val content: Any
+) {
+    fun getContentText(): String? {
+        return when (val c = content) {
+            is String -> c
+            is List<*> -> {
+                c.mapNotNull { item ->
+                    when (item) {
+                        is ContentPart -> item.text
+                        is Map<*, *> -> item["text"]?.toString()
+                        else -> null
+                    }
+                }.joinToString("\n").takeIf { it.isNotBlank() }
+            }
+            else -> c.toString()
+        }
+    }
+}
+
+data class ContentPart(
+    val type: String,
+    val text: String? = null,
+    @SerializedName("image_url")
+    val imageUrl: ImageUrl? = null
+)
+
+data class ImageUrl(
+    val url: String
+)
+
+data class FileAttachment(
+    val mimeType: String,
+    val dataUrl: String
 )
 
 data class ChatCompletionResponse(

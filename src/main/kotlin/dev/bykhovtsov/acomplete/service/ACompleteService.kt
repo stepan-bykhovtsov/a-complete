@@ -5,6 +5,8 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.progress.ProgressIndicator
 import dev.bykhovtsov.acomplete.client.OpenRouterClient
 import dev.bykhovtsov.acomplete.client.model.ConnectionTestResult
+import dev.bykhovtsov.acomplete.client.model.FileAttachment
+import dev.bykhovtsov.acomplete.mention.MentionedFileType
 import dev.bykhovtsov.acomplete.prompt.PromptBuilder
 import dev.bykhovtsov.acomplete.settings.ACompleteCredentials
 import dev.bykhovtsov.acomplete.settings.ACompleteSettings
@@ -31,12 +33,17 @@ class ACompleteService {
         val systemInstruction = PromptBuilder.SYSTEM_INSTRUCTION
         val userPrompt = PromptBuilder.buildUserPrompt(context)
 
+        val attachments = context.mentionedFiles
+            .filter { (it.type == MentionedFileType.IMAGE || it.type == MentionedFileType.PDF) && it.base64DataUrl != null }
+            .map { FileAttachment(mimeType = it.mimeType, dataUrl = it.base64DataUrl!!) }
+
         val rawGeneratedCode = client.sendCompletion(
             apiKey = apiKey,
             model = settings.model,
             baseUrl = settings.apiBaseUrl,
             systemInstruction = systemInstruction,
             userPrompt = userPrompt,
+            attachments = attachments,
             timeoutSeconds = settings.timeoutSeconds,
             indicator = indicator
         )
